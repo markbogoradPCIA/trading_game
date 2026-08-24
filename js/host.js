@@ -1,4 +1,7 @@
-const socket = io();
+const socket = io({
+  transports: ["websocket", "polling"],
+  reconnection: true,
+});
 const chart = new PriceChart(document.getElementById("host-chart"), "dark");
 
 const els = {
@@ -9,6 +12,7 @@ const els = {
   playing: document.getElementById("screen-playing"),
   playerGrid: document.getElementById("player-grid"),
   lobbyCount: document.getElementById("lobby-count"),
+  lobbyStatus: document.getElementById("lobby-status"),
   lobbyCapacity: document.getElementById("lobby-capacity"),
   btnStart: document.getElementById("btn-start"),
   dayLabel: document.getElementById("day-label"),
@@ -36,14 +40,29 @@ const els = {
 let state = null;
 let timerInterval = null;
 
-socket.emit("host:create");
+els.lobbyStatus.textContent = "Connecting to server…";
 
-socket.on("host:created", ({ code, joinUrl, state: s }) => {
+socket.on("connect", () => {
+  els.lobbyStatus.textContent = "Connected — creating session…";
+  socket.emit("host:create");
+});
+
+socket.on("connect_error", (err) => {
+  els.lobbyStatus.textContent = `Server connection failed — ${err.message}`;
+});
+
+socket.on("disconnect", () => {
+  els.lobbyStatus.textContent = "Disconnected — retrying…";
+});
+
+socket.on("host:created", ({ code, joinUrl, qrDataUrl, state: s }) => {
   state = s;
   els.pin.textContent = code;
   const url = joinUrl.startsWith("http") ? joinUrl : `${location.origin}${joinUrl}`;
   els.joinUrl.textContent = url.replace(/^https?:\/\//, "");
-  renderJoinQr(code, url);
+  renderJoinQr(code, url, qrDataUrl);
+  els.lobbyStatus.classList.add("hidden");
+  els.lobbyCount.classList.remove("hidden");
   render();
 });
 
@@ -53,6 +72,8 @@ socket.on("host:update", (s) => {
 });
 
 socket.on("host:error", (msg) => {
+  els.lobbyStatus.textContent = msg;
+  els.lobbyStatus.classList.remove("hidden");
   els.hostStatus.textContent = msg;
 });
 
@@ -61,11 +82,27 @@ els.btnReveal.addEventListener("click", () => socket.emit("host:reveal"));
 els.btnStandings.addEventListener("click", () => socket.emit("host:standings"));
 els.btnNext.addEventListener("click", () => socket.emit("host:next"));
 
-function renderJoinQr(code, url) {
+function renderJoinQr(code, joinUrl, qrDataUrl) {
   if (!els.joinQr) return;
-  els.joinQr.src = `/api/join-qr/${encodeURIComponent(code)}`;
-  els.joinQr.alt = `Scan to join session ${code}`;
-  els.joinQr.title = url;
+
+  els.joinQr.onerror = () => {
+    els.joinQr.classList.add("qr-load-failed");
+  };
+
+  if (qrDataUrl) {
+    els.joinQr.src = qrDataUrl;
+    els.joinQr.classList.remove("qr-load-failed", "hidden");
+    els.joinQr.alt = `Scan to join session ${code}`;
+    els.joinQr.title = joinUrl;
+    return;
+  }
+
+  if (/^\d{6}$/.test(String(code))) {
+    els.joinQr.src = `${location.origin}/api/join-qr/${encodeURIComponent(code)}`;
+    els.joinQr.classList.remove("qr-load-failed", "hidden");
+    els.joinQr.alt = `Scan to join session ${code}`;
+    els.joinQr.title = joinUrl;
+  }
 }
 
 function clearTradeTimerTick() {

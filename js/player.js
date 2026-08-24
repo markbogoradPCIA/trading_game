@@ -1,4 +1,7 @@
-const socket = io();
+const socket = io({
+  transports: ["websocket", "polling"],
+  reconnection: true,
+});
 
 const joinScreen = document.getElementById("screen-join");
 const sessionShell = document.getElementById("session-shell");

@@ -1526,6 +1526,14 @@ body {
   object-fit: contain;
 }
 
+.join-qr.hidden {
+  display: none;
+}
+
+.join-qr.qr-load-failed {
+  display: none;
+}
+
 .join-qr-caption {
   margin-top: 10px;
   font-size: 12px;

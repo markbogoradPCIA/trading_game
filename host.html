@@ -58,7 +58,7 @@
 
             <div class="join-qr-wrap">
 
-              <img id="join-qr" class="join-qr" width="200" height="200" alt="QR code to join session" />
+              <img id="join-qr" class="join-qr hidden" width="200" height="200" alt="" />
 
               <p class="join-qr-caption">Scan to open join page with PIN filled in</p>
 
@@ -80,7 +80,9 @@
 
           <div class="host-controls">
 
-            <span id="lobby-count" class="host-status">0 players joined</span>
+            <span id="lobby-status" class="host-status">Connecting to server…</span>
+
+            <span id="lobby-count" class="host-status hidden">0 players joined</span>
 
             <button id="btn-start" class="mp-btn mp-btn-primary">Start session</button>
 
