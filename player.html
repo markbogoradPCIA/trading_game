@@ -20,7 +20,7 @@
         <a href="index.html" class="mp-btn mp-btn-ghost player-k-btn">Back</a>
       </div>
 
-      <!-- In-session shell (lobby, wait, trade, locked, standings, finished) -->
+      <!-- In-session shell -->
       <div id="session-shell" class="session-shell hidden">
         <header class="terminal-header">
           <div class="terminal-brand">
@@ -32,6 +32,56 @@
             <span id="player-badge" class="player-badge"></span>
           </div>
         </header>
+
+        <div id="player-dock" class="player-dock hidden">
+          <div class="market-strip">
+            <div class="market-stat">
+              <span class="stat-key">WTI flat</span>
+              <span id="market-price" class="stat-val price-val">$72.00</span>
+            </div>
+            <div class="market-stat">
+              <span class="stat-key">Day move</span>
+              <span id="market-change" class="stat-val change-val pending">—</span>
+            </div>
+            <div class="market-stat market-stat-pnl">
+              <span class="stat-key">Your P&amp;L</span>
+              <span id="market-pnl" class="stat-val pnl-val">$0.00</span>
+            </div>
+          </div>
+
+          <article class="terminal-panel order-panel player-order-dock">
+            <div id="order-dock-trade">
+              <div class="order-panel-head">
+                <div>
+                  <p class="panel-eyebrow">Order ticket</p>
+                  <h2 class="order-title">Flat price exposure</h2>
+                </div>
+                <div id="exposure-readout" class="exposure-readout">0%</div>
+              </div>
+              <p id="exposure-direction" class="exposure-direction">Neutral · no position</p>
+              <div class="trader-slider-wrap">
+                <input type="range" id="exposure-slider" class="trader-slider" min="-100" max="100" value="0" step="5" />
+                <div class="trader-slider-labels">
+                  <span>−100% short</span>
+                  <span>Flat</span>
+                  <span>+100% long</span>
+                </div>
+              </div>
+              <div id="exposure-preview" class="trader-exposure-track"></div>
+              <button id="btn-lock" class="mp-btn mp-btn-submit">Submit order</button>
+            </div>
+
+            <div id="order-dock-locked" class="order-dock-status hidden">
+              <p class="panel-eyebrow">Order sent</p>
+              <p class="order-dock-message">Exposure locked at <strong id="locked-exposure">0%</strong></p>
+            </div>
+
+            <div id="order-dock-idle" class="order-dock-status hidden">
+              <p class="panel-eyebrow">Order ticket</p>
+              <p class="order-dock-message">Awaiting headlines from the host</p>
+            </div>
+          </article>
+        </div>
 
         <main class="terminal-main">
           <div id="screen-lobby" class="terminal-panel hidden">
@@ -53,75 +103,32 @@
                 <span id="headline-date" class="news-date">Mar 3</span>
                 <span id="trade-timer" class="trade-timer trade-timer-compact hidden">
                   <span class="trade-timer-label">Time</span>
-                  <span id="trade-timer-value" class="trade-timer-value">1:30</span>
+                  <span id="trade-timer-value" class="trade-timer-value">2:00</span>
                 </span>
               </div>
               <div id="player-headlines-list" class="headlines-list headlines-list-compact"></div>
               <p id="trade-prompt" class="trade-prompt hidden"></p>
             </article>
-
-            <div class="market-strip">
-              <div class="market-stat">
-                <span class="stat-key">WTI flat</span>
-                <span id="market-price" class="stat-val price-val">$72.00</span>
-              </div>
-              <div class="market-stat">
-                <span class="stat-key">Day move</span>
-                <span id="market-change" class="stat-val change-val pending">—</span>
-              </div>
-              <div class="market-stat">
-                <span class="stat-key">Your P&amp;L</span>
-                <span id="market-pnl" class="stat-val pnl-val">$0.00</span>
-              </div>
-            </div>
-
-            <article class="terminal-panel order-panel">
-              <div class="order-panel-head">
-                <div>
-                  <p class="panel-eyebrow">Order ticket</p>
-                  <h2 class="order-title">Flat price exposure</h2>
-                </div>
-                <div id="exposure-readout" class="exposure-readout">0%</div>
-              </div>
-              <p id="exposure-direction" class="exposure-direction">Neutral · no position</p>
-
-              <div class="trader-slider-wrap">
-                <input type="range" id="exposure-slider" class="trader-slider" min="-100" max="100" value="0" step="5" />
-                <div class="trader-slider-labels">
-                  <span>−100% short</span>
-                  <span>Flat</span>
-                  <span>+100% long</span>
-                </div>
-              </div>
-
-              <div id="exposure-preview" class="trader-exposure-track"></div>
-
-              <button id="btn-lock" class="mp-btn mp-btn-submit">Submit order</button>
-            </article>
           </div>
 
           <div id="screen-locked" class="terminal-panel hidden">
-            <p class="panel-eyebrow">Order sent</p>
-            <h1 class="panel-title">Working</h1>
-            <p class="panel-copy">Exposure locked at <strong id="locked-exposure">0%</strong>. Waiting for the desk to close the day.</p>
-            <div id="locked-resolution" class="resolution-box hidden"></div>
             <div class="locked-badge">✓</div>
+            <p class="panel-copy">Waiting for the desk to close the day.</p>
+            <div id="locked-resolution" class="resolution-box hidden"></div>
           </div>
 
           <div id="screen-standings" class="terminal-panel hidden">
             <p class="panel-eyebrow">Round mark</p>
             <h1 class="panel-title">Your standing</h1>
             <div id="player-rank" class="player-rank-big">#1</div>
-            <div id="player-pnl" class="player-pnl-big">+$0</div>
             <div id="standings-resolution" class="resolution-box hidden"></div>
             <p class="panel-copy">Full desk rankings on the host screen.</p>
           </div>
 
           <div id="screen-finished" class="terminal-panel hidden">
             <p class="panel-eyebrow">Session closed</p>
-            <h1 class="panel-title">Final P&amp;L</h1>
+            <h1 class="panel-title">Final standing</h1>
             <div id="final-rank" class="player-rank-big">#1</div>
-            <div id="final-pnl" class="player-pnl-big">+$0</div>
             <a href="player.html" class="mp-btn mp-btn-primary player-k-btn" style="margin-top: 24px">New session</a>
           </div>
         </main>

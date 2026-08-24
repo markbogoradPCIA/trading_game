@@ -29,7 +29,6 @@ const els = {
   standingsList: document.getElementById("standings-list"),
   podium: document.getElementById("stage-podium"),
   podiumList: document.getElementById("podium-list"),
-  dmBox: document.getElementById("dm-box"),
   stageResolution: document.getElementById("stage-resolution"),
   hostStatus: document.getElementById("host-status"),
   btnReveal: document.getElementById("btn-reveal"),
@@ -189,7 +188,7 @@ function render() {
   if (state.subPhase === "headline") {
     clearTradeTimerTick();
     els.btnReveal.classList.remove("hidden");
-    els.hostStatus.textContent = `${state.confirmedCount}/${state.playerCount} ready · Reveal headlines to start the ${state.tradeTimerSeconds ?? 90}s timer`;
+    els.hostStatus.textContent = `${state.confirmedCount}/${state.playerCount} ready · Reveal headlines to start the ${state.tradeTimerSeconds ?? 120}s timer`;
     return;
   }
 
@@ -253,23 +252,11 @@ function showHeadlines() {
     els.stagePriceRow.classList.add("hidden");
   }
 
-  if (showMove && day?.resolution) {
-    els.stageResolution.innerHTML = `<strong>Market resolved:</strong> ${day.resolution}`;
+  if (showMove && day?.resolutionData) {
+    els.stageResolution.innerHTML = renderDayResolution(day.resolutionData);
     els.stageResolution.classList.remove("hidden");
   } else {
     els.stageResolution.classList.add("hidden");
-  }
-
-  if (day?.dmNote || day?.netImpact != null) {
-    const parts = [];
-    if (day.netImpact != null) {
-      parts.push(`[Host only] Net impact: ${day.netImpact > 0 ? "+" : ""}${day.netImpact}`);
-    }
-    if (day.dmNote) parts.push(day.dmNote);
-    els.dmBox.textContent = parts.join("\n\n");
-    els.dmBox.classList.remove("hidden");
-  } else {
-    els.dmBox.classList.add("hidden");
   }
 }
 

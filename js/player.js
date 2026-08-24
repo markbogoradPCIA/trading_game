@@ -5,6 +5,7 @@ const socket = io({
 
 const joinScreen = document.getElementById("screen-join");
 const sessionShell = document.getElementById("session-shell");
+const playerDock = document.getElementById("player-dock");
 
 const screens = {
   lobby: document.getElementById("screen-lobby"),
@@ -32,6 +33,9 @@ const els = {
   marketPrice: document.getElementById("market-price"),
   marketChange: document.getElementById("market-change"),
   marketPnl: document.getElementById("market-pnl"),
+  orderDockTrade: document.getElementById("order-dock-trade"),
+  orderDockLocked: document.getElementById("order-dock-locked"),
+  orderDockIdle: document.getElementById("order-dock-idle"),
   exposureReadout: document.getElementById("exposure-readout"),
   exposureDirection: document.getElementById("exposure-direction"),
   slider: document.getElementById("exposure-slider"),
@@ -41,9 +45,7 @@ const els = {
   lockedResolution: document.getElementById("locked-resolution"),
   standingsResolution: document.getElementById("standings-resolution"),
   rank: document.getElementById("player-rank"),
-  pnl: document.getElementById("player-pnl"),
   finalRank: document.getElementById("final-rank"),
-  finalPnl: document.getElementById("final-pnl"),
 };
 
 let state = null;
@@ -189,6 +191,12 @@ function updateMarketStrip() {
   els.marketPnl.className = "stat-val pnl-val " + (pnl >= 0 ? "up" : "down");
 }
 
+function setOrderDockMode(mode) {
+  els.orderDockTrade.classList.toggle("hidden", mode !== "trade");
+  els.orderDockLocked.classList.toggle("hidden", mode !== "locked");
+  els.orderDockIdle.classList.toggle("hidden", mode !== "idle");
+}
+
 function updateHeadlines() {
   const day = state.day;
   const headlines = normalizeHeadlines(day);
@@ -263,40 +271,42 @@ function render() {
 
   if (state.phase === "lobby") {
     clearTradeTimerTick();
+    playerDock.classList.add("hidden");
     show(screens.lobby);
     return;
   }
 
+  playerDock.classList.remove("hidden");
+  updateMarketStrip();
+
   if (state.phase === "finished") {
     clearTradeTimerTick();
+    setOrderDockMode("idle");
     show(screens.finished);
     const rank = state.players.findIndex((p) => p.id === state.playerId) + 1;
     els.finalRank.textContent = `#${rank}`;
-    els.finalPnl.textContent = formatMoney(state.me?.pnl ?? 0);
-    els.finalPnl.className = "player-pnl-big " + ((state.me?.pnl ?? 0) >= 0 ? "up" : "down");
     return;
   }
 
   if (state.subPhase === "standings") {
     clearTradeTimerTick();
+    setOrderDockMode("idle");
     show(screens.standings);
     showResolution();
-    updateMarketStrip();
-    if (state.day?.resolution) {
-      els.standingsResolution.innerHTML = `<strong>Market resolved:</strong> ${state.day.resolution}`;
+    if (state.day?.resolutionData) {
+      els.standingsResolution.innerHTML = renderDayResolution(state.day.resolutionData);
       els.standingsResolution.classList.remove("hidden");
     } else {
       els.standingsResolution.classList.add("hidden");
     }
     const rank = state.players.findIndex((p) => p.id === state.playerId) + 1;
     els.rank.textContent = `#${rank}`;
-    els.pnl.textContent = formatMoney(state.me?.pnl ?? 0);
-    els.pnl.className = "player-pnl-big " + ((state.me?.pnl ?? 0) >= 0 ? "up" : "down");
     return;
   }
 
   if (state.subPhase === "headline" && !state.headlineRevealed) {
     clearTradeTimerTick();
+    setOrderDockMode("idle");
     show(screens.wait);
     tradeDayIndex = -1;
     return;
@@ -305,16 +315,16 @@ function render() {
   if (state.subPhase === "trade") {
     if (state.me?.confirmed) {
       clearTradeTimerTick();
-      show(screens.locked);
+      setOrderDockMode("locked");
       const pct = Math.round((state.me.exposure ?? selectedExposure) * 100);
       els.lockedExposure.textContent = `${pct >= 0 ? "+" : ""}${pct}%`;
-      els.lockedResolution.classList.add("hidden");
+      show(screens.locked);
       return;
     }
 
+    setOrderDockMode("trade");
     show(screens.trade);
     updateHeadlines();
-    updateMarketStrip();
     startTradeTimerTick();
 
     if (tradeDayIndex !== state.dayIndex) {
@@ -325,6 +335,7 @@ function render() {
 
   tradeDayIndex = -1;
   clearTradeTimerTick();
+  setOrderDockMode("idle");
   show(screens.wait);
 }
 

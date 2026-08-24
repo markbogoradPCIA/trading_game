@@ -27,7 +27,7 @@ function cacheElements() {
     "exposure-slider", "exposure-value", "exposure-preview", "exposure-direction",
     "btn-confirm", "btn-reveal", "btn-next",
     "btn-start", "btn-restart", "btn-save-score",
-    "dm-note", "dm-panel", "action-log",
+    "action-log",
     "end-summary", "end-comparison", "end-archetypes", "end-actions",
     "leaderboard-end", "player-name", "end-subtitle",
   ];
@@ -156,8 +156,8 @@ function updateHeadlinePanel() {
         "stage-change solo-change " + (day.change >= 0 ? "up" : "down");
       els.price_label.textContent = "Flat price (close)";
       els.current_price.textContent = formatMoney(game.closePrice);
-      if (day.resolution) {
-        els.day_resolution.innerHTML = `<strong>Market resolved:</strong> ${day.resolution}`;
+      if (day.resolutionData) {
+        els.day_resolution.innerHTML = renderDayResolution(day.resolutionData);
         els.day_resolution.classList.remove("hidden");
       } else {
         els.day_resolution.classList.add("hidden");
@@ -194,7 +194,6 @@ function updateUI() {
   els.stat_portfolio.textContent = formatMoney(game.portfolioValueAt(markPrice));
   els.stat_pnl.textContent = `${pnl >= 0 ? "+" : ""}${formatMoney(pnl)}`;
   els.stat_pnl.className = "stat-val pnl-val " + (pnl >= 0 ? "up" : "down");
-  els.dm_note.textContent = day.dmNote || "";
 
   const canInteract = awaitingAction && (!dmMode || headlineRevealed);
   els.exposure_slider.disabled = !canInteract;

@@ -26,14 +26,14 @@
 
           <label class="solo-toggle">
             <input type="checkbox" id="dm-mode-toggle" />
-            <span>DM / Host mode <em>(hide headlines until reveal)</em></span>
+            <span>Practice mode <em>(hide headlines until reveal)</em></span>
           </label>
 
           <ul class="solo-rules">
             <li>$10,000 starting cash — trade <strong>UGEB flat price</strong> ($/bbl)</li>
             <li>Flat price only: no futures, spreads, or rolls — just spot crude exposure</li>
             <li>Each day: set exposure from <strong>100% short</strong> to <strong>100% long</strong></li>
-            <li>Each day: <strong>3–4 global headlines</strong> — trade WTI flat price ($/bbl)</li>
+            <li>Each day: <strong>3 global headlines</strong> — trade WTI flat price ($/bbl)</li>
           </ul>
 
           <button id="btn-start" class="mp-btn mp-btn-primary solo-start-btn">Start session</button>
@@ -127,11 +127,6 @@
           <div class="host-chart-wrap">
             <p class="solo-chart-label">WTI flat price ($/bbl)</p>
             <canvas id="price-chart"></canvas>
-          </div>
-
-          <div id="dm-panel" class="dm-box">
-            <strong>DM notes</strong>
-            <p id="dm-note"></p>
           </div>
 
           <div class="solo-log">

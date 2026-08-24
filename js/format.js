@@ -8,6 +8,11 @@ function formatPct(n) {
   return `${sign}${n.toFixed(1)}%`;
 }
 
+function formatPctPrecise(n) {
+  const sign = n >= 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}%`;
+}
+
 function formatExposure(n) {
   const pct = Math.round(n * 100);
   if (pct > 0) return `+${pct}% long`;
@@ -78,4 +83,36 @@ function formatTimer(seconds) {
 function getTradeSecondsRemaining(tradeDeadlineAt) {
   if (!tradeDeadlineAt) return null;
   return Math.max(0, Math.ceil((tradeDeadlineAt - Date.now()) / 1000));
+}
+
+function getTradeSecondsRemaining(tradeDeadlineAt) {
+  if (!tradeDeadlineAt) return null;
+  return Math.max(0, Math.ceil((tradeDeadlineAt - Date.now()) / 1000));
+}
+
+function renderDayResolution(data) {
+  if (!data) return "";
+
+  const moveClass = data.direction === "up" ? "up" : "down";
+  const signals = (data.signals || [])
+    .map(
+      (signal) => `
+        <li class="resolution-signal">
+          <span class="resolution-signal-category">${escapeHtml(signal.category)}</span>
+          <span class="resolution-signal-reason">${escapeHtml(signal.reason)}</span>
+        </li>`
+    )
+    .join("");
+
+  return `
+    <div class="resolution-card ${moveClass}">
+      <div class="resolution-card-label">Market resolved</div>
+      <div class="resolution-card-move ${moveClass}">
+        WTI ${data.direction} <strong>${formatPctPrecise(data.change)}</strong>
+      </div>
+      <p class="resolution-card-summary">
+        Today's news flow was <strong>${escapeHtml(data.netRead)}</strong> for flat price.
+      </p>
+      <ul class="resolution-signal-list">${signals}</ul>
+    </div>`;
 }
