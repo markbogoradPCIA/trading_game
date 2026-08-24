@@ -564,6 +564,10 @@ body {
 }
 
 .dm-box {
+  display: none !important;
+}
+
+.dm-box {
   margin-top: 16px;
   padding: 14px 16px;
   background: rgba(251, 191, 36, 0.08);
