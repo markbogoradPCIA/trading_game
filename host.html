@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+  <head>
+
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Host — Pipeline Pulse</title>
+
+    <link rel="stylesheet" href="css/multiplayer.css" />
+
+  </head>
+
+  <body>
+
+    <a href="index.html" class="back-link">← Home</a>
+
+    <div class="host-app">
+
+      <div class="host-top">
+
+        <div class="host-brand">
+
+          <h1>Pipeline Pulse</h1>
+
+          <p>Host · WTI flat price · global headlines</p>
+
+        </div>
+
+        <div class="host-pin-block">
+
+          <div class="host-pin-label">SESSION PIN</div>
+
+          <div id="game-pin" class="host-pin">------</div>
+
+          <div id="join-url" class="host-join-url"></div>
+
+        </div>
+
+      </div>
+
+
+
+      <div id="host-stage" class="host-stage">
+
+        <div id="screen-lobby">
+
+          <h2 class="stage-lobby-title">Waiting for traders…</h2>
+
+          <p class="stage-hint">Scan the QR code or share the PIN — up to <strong>40</strong> players</p>
+
+
+
+          <div class="lobby-join-panel">
+
+            <div class="join-qr-wrap">
+
+              <img id="join-qr" class="join-qr" width="200" height="200" alt="QR code to join session" />
+
+              <p class="join-qr-caption">Scan to open join page with PIN filled in</p>
+
+            </div>
+
+            <div class="lobby-join-meta">
+
+              <p class="lobby-capacity"><span id="lobby-capacity">0 / 40</span> traders connected</p>
+
+              <p class="lobby-session-note">Each trading day includes <strong>3–4 headlines</strong>. Players have <strong>90 seconds</strong> to lock exposure once headlines are revealed.</p>
+
+            </div>
+
+          </div>
+
+
+
+          <div id="player-grid" class="player-grid"></div>
+
+          <div class="host-controls">
+
+            <span id="lobby-count" class="host-status">0 players joined</span>
+
+            <button id="btn-start" class="mp-btn mp-btn-primary">Start session</button>
+
+          </div>
+
+        </div>
+
+
+
+        <div id="screen-playing" class="hidden">
+
+          <div class="playing-top-row">
+
+            <div id="day-label" class="day-label">Day 1 / 10</div>
+
+            <div id="trade-timer" class="trade-timer hidden">
+
+              <span class="trade-timer-label">Time left</span>
+
+              <span id="trade-timer-value" class="trade-timer-value">1:30</span>
+
+            </div>
+
+          </div>
+
+
+
+          <div id="stage-headline-wrap" class="stage-headline">
+
+            <p id="stage-headline-placeholder" class="stage-headline-text">Headlines hidden — click Reveal when the room is ready</p>
+
+            <div id="stage-headlines-list" class="headlines-list hidden"></div>
+
+            <p id="stage-prompt" class="stage-prompt hidden"></p>
+
+            <div id="stage-price-row" class="stage-price-row hidden">
+
+              <span id="stage-price" class="stage-price">$72.00</span>
+
+              <span id="stage-change" class="stage-change pending">—</span>
+
+            </div>
+
+          </div>
+
+
+
+          <div id="stage-resolution" class="resolution-box hidden"></div>
+
+
+
+          <div id="stage-standings" class="hidden">
+
+            <h2 class="section-title">Round standings</h2>
+
+            <div id="standings-list" class="standings-list"></div>
+
+          </div>
+
+
+
+          <div id="stage-podium" class="hidden">
+
+            <h2 class="section-title">Final standings</h2>
+
+            <div id="podium-list" class="standings-list"></div>
+
+          </div>
+
+
+
+          <div class="host-chart-wrap">
+
+            <canvas id="host-chart"></canvas>
+
+          </div>
+
+
+
+          <div id="dm-box" class="dm-box hidden"></div>
+
+
+
+          <div class="host-controls">
+
+            <span id="host-status" class="host-status">Waiting…</span>
+
+            <button id="btn-reveal" class="mp-btn mp-btn-warn hidden">Reveal headlines</button>
+
+            <button id="btn-standings" class="mp-btn mp-btn-primary hidden">Show standings</button>
+
+            <button id="btn-next" class="mp-btn mp-btn-success hidden">Next day</button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/format.js"></script>
+
+    <script src="js/chart.js"></script>
+
+    <script src="js/host.js"></script>
+
+  </body>
+
+</html>
+
+

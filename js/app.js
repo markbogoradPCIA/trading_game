@@ -1,152 +1,4 @@
-class PriceChart {
-  constructor(canvas) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext("2d");
-    this.priceData = [];
-    this.exposureData = [];
-  }
-
-  setData(pricePoints, exposurePoints = []) {
-    this.priceData = pricePoints;
-    this.exposureData = exposurePoints;
-    this.draw();
-  }
-
-  draw() {
-    const { canvas, ctx, priceData, exposureData } = this;
-    const dpr = window.devicePixelRatio || 1;
-    const rect = canvas.getBoundingClientRect();
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-    const w = rect.width;
-    const h = rect.height;
-    const pad = { top: 20, right: 16, bottom: 52, left: 52 };
-    const exposureH = 36;
-
-    ctx.clearRect(0, 0, w, h);
-
-    if (priceData.length < 2) {
-      ctx.fillStyle = "#64748b";
-      ctx.font = "13px system-ui, sans-serif";
-      ctx.fillText("Price chart builds as you trade", pad.left, h / 2);
-      return;
-    }
-
-    const prices = priceData.map((d) => d.price);
-    const min = Math.min(...prices) * 0.98;
-    const max = Math.max(...prices) * 1.02;
-    const chartW = w - pad.left - pad.right;
-    const chartH = h - pad.top - pad.bottom - exposureH;
-
-    const x = (i) => pad.left + (i / (priceData.length - 1)) * chartW;
-    const y = (p) => pad.top + chartH - ((p - min) / (max - min)) * chartH;
-
-    // grid
-    ctx.strokeStyle = "#1e293b";
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 4; i++) {
-      const gy = pad.top + (chartH / 4) * i;
-      ctx.beginPath();
-      ctx.moveTo(pad.left, gy);
-      ctx.lineTo(w - pad.right, gy);
-      ctx.stroke();
-      const val = max - ((max - min) / 4) * i;
-      ctx.fillStyle = "#64748b";
-      ctx.font = "11px system-ui, sans-serif";
-      ctx.textAlign = "right";
-      ctx.fillText(`$${val.toFixed(2)}`, pad.left - 6, gy + 4);
-    }
-
-    // price area + line
-    const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + chartH);
-    gradient.addColorStop(0, "rgba(56, 189, 248, 0.25)");
-    gradient.addColorStop(1, "rgba(56, 189, 248, 0)");
-    ctx.beginPath();
-    ctx.moveTo(x(0), y(prices[0]));
-    for (let i = 1; i < prices.length; i++) ctx.lineTo(x(i), y(prices[i]));
-    ctx.lineTo(x(prices.length - 1), pad.top + chartH);
-    ctx.lineTo(x(0), pad.top + chartH);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-
-    ctx.beginPath();
-    ctx.moveTo(x(0), y(prices[0]));
-    for (let i = 1; i < prices.length; i++) ctx.lineTo(x(i), y(prices[i]));
-    ctx.strokeStyle = "#38bdf8";
-    ctx.lineWidth = 2;
-    ctx.stroke();
-
-    const last = prices.length - 1;
-    ctx.beginPath();
-    ctx.arc(x(last), y(prices[last]), 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#38bdf8";
-    ctx.fill();
-
-    // exposure overlay bars
-    const expTop = pad.top + chartH + 8;
-    ctx.fillStyle = "#64748b";
-    ctx.font = "10px system-ui, sans-serif";
-    ctx.textAlign = "left";
-    ctx.fillText("Exposure", pad.left, expTop + 10);
-
-    if (exposureData.length > 0) {
-      const barAreaH = exposureH - 14;
-      const midY = expTop + 14 + barAreaH / 2;
-      const n = priceData.length - 1;
-
-      ctx.strokeStyle = "#334155";
-      ctx.beginPath();
-      ctx.moveTo(pad.left, midY);
-      ctx.lineTo(w - pad.right, midY);
-      ctx.stroke();
-
-      const barW = Math.max(4, chartW / n - 2);
-      for (let i = 0; i < exposureData.length; i++) {
-        const exp = exposureData[i].exposure;
-        const px = x(i + 1) - barW / 2;
-        const barH = (Math.abs(exp) * barAreaH) / 2;
-        ctx.fillStyle =
-          exp >= 0 ? "rgba(74, 222, 128, 0.7)" : "rgba(248, 113, 113, 0.7)";
-        if (exp >= 0) {
-          ctx.fillRect(px, midY - barH, barW, barH);
-        } else {
-          ctx.fillRect(px, midY, barW, barH);
-        }
-      }
-    }
-
-    // x labels
-    ctx.fillStyle = "#64748b";
-    ctx.font = "10px system-ui, sans-serif";
-    ctx.textAlign = "center";
-    const labelEvery = Math.max(1, Math.floor(priceData.length / 5));
-    for (let i = 0; i < priceData.length; i += labelEvery) {
-      ctx.fillText(priceData[i].date || `D${i}`, x(i), h - 6);
-    }
-  }
-}
-
 const LEADERBOARD_KEY = "pipeline-pulse-leaderboard";
-
-function formatMoney(n) {
-  const sign = n >= 0 ? "" : "-";
-  return `${sign}$${Math.abs(n).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-}
-
-function formatPct(n) {
-  const sign = n >= 0 ? "+" : "";
-  return `${sign}${n.toFixed(1)}%`;
-}
-
-function formatExposure(n) {
-  const pct = Math.round(n * 100);
-  if (pct > 0) return `+${pct}% long flat`;
-  if (pct < 0) return `${pct}% short flat`;
-  return "Flat (no position)";
-}
 
 let game = null;
 let chart = null;
@@ -168,10 +20,11 @@ function cacheElements() {
     "scenario-title", "scenario-subtitle", "start-description",
     "dm-mode-toggle", "leaderboard-start",
     "scenario-title-game", "day-counter",
-    "date-label", "headline-tag", "headline-text", "headline-context",
+    "date-label", "headline-tag", "headlines-list", "trade-prompt",
+    "day-resolution", "price-label",
     "headline-hidden", "price-change", "current-price",
     "stat-cash", "stat-shares", "stat-exposure", "stat-portfolio", "stat-pnl",
-    "exposure-slider", "exposure-value", "exposure-preview",
+    "exposure-slider", "exposure-value", "exposure-preview", "exposure-direction",
     "btn-confirm", "btn-reveal", "btn-next",
     "btn-start", "btn-restart", "btn-save-score",
     "dm-note", "dm-panel", "action-log",
@@ -206,7 +59,7 @@ function renderLeaderboard(containerId) {
   container.innerHTML = entries
     .map(
       (e, i) =>
-        `<div class="lb-row"><span class="lb-rank">#${i + 1}</span><span class="lb-name">${escapeHtml(e.name)}</span><span class="lb-score ${e.pnl >= 0 ? "up" : "down"}">${formatMoney(e.pnl)}</span></div>`
+        `<div class="standing-row"><span class="standing-rank">#${i + 1}</span><span>${escapeHtml(e.name)}</span><span class="standing-pnl ${e.pnl >= 0 ? "up" : "down"}">${formatMoney(e.pnl)}</span></div>`
     )
     .join("");
 }
@@ -237,58 +90,100 @@ function saveScore(name, pnl, pct) {
   localStorage.setItem(LEADERBOARD_KEY, JSON.stringify(entries.slice(0, 50)));
 }
 
+function exposureDirectionText(n) {
+  const pct = Math.round(n * 100);
+  if (pct > 0) return `${pct}% long flat price`;
+  if (pct < 0) return `${Math.abs(pct)}% short flat price`;
+  return "Neutral · no position";
+}
+
 function updateExposurePreview(value) {
   pendingExposure = value / 100;
-  els.exposure_value.textContent = formatExposure(pendingExposure);
+  const pct = Math.round(value);
 
-  const pct = Math.abs(value);
+  els.exposure_value.textContent = `${pct >= 0 ? "+" : ""}${pct}%`;
+  els.exposure_value.className =
+    "exposure-readout " + (pct > 0 ? "long" : pct < 0 ? "short" : "flat");
+  if (els.exposure_direction) {
+    els.exposure_direction.textContent = exposureDirectionText(pendingExposure);
+  }
+
+  const abs = Math.abs(value);
   const isLong = value >= 0;
   els.exposure_preview.innerHTML = `
-    <div class="exposure-bar-track">
-      <div class="exposure-bar-half left">
-        <div class="exposure-bar-short" style="width:${isLong ? 0 : pct}%"></div>
-      </div>
-      <div class="exposure-bar-half right">
-        <div class="exposure-bar-long" style="width:${isLong ? pct : 0}%"></div>
-      </div>
-    </div>
-    <div class="exposure-labels"><span>Short flat</span><span>No position</span><span>Long flat</span></div>
-  `;
+    <div class="track-center"></div>
+    <div class="track-fill" style="width:${abs / 2}%"></div>`;
+  els.exposure_preview.className =
+    "trader-exposure-track " + (isLong ? "fill-right" : "fill-left");
 }
 
 function updateHeadlinePanel() {
   const day = game.currentDay;
-  const priceInfo = game.prices[game.dayIndex + 1] ?? game.prices[game.dayIndex];
   const showContent = !dmMode || headlineRevealed;
+  const tradeOpen = awaitingAction;
+  const headlines = normalizeHeadlines(day);
 
   els.date_label.textContent = day.date;
 
   if (showContent) {
     els.headline_hidden.classList.add("hidden");
-    els.headline_tag.textContent = day.tag || "NEWS";
-    els.headline_tag.className = "headline-tag tag-" + (day.tag || "news").toLowerCase();
-    els.headline_text.textContent = day.headline;
-    els.headline_context.textContent = day.context || "";
-    els.headline_context.classList.remove("hidden");
-    els.price_change.textContent = formatPct(day.change);
-    els.price_change.className = "price-change " + (day.change >= 0 ? "up" : "down");
+    els.headline_tag.textContent =
+      headlines.length > 1 ? `${headlines.length} headlines` : headlines[0]?.tag || "NEWS";
+    els.headline_tag.className = "news-tag tag-" + (headlines[0]?.tag || "news").toLowerCase();
+
+    const headlinesEl = document.getElementById("headlines-list");
+    if (headlinesEl) {
+      headlinesEl.innerHTML = renderHeadlinesList(headlines);
+      headlinesEl.classList.remove("hidden");
+    }
+
+    if (tradeOpen && day.prompt) {
+      els.trade_prompt.textContent = day.prompt;
+      els.trade_prompt.classList.remove("hidden");
+    } else {
+      els.trade_prompt.classList.add("hidden");
+    }
+
+    if (tradeOpen) {
+      els.price_change.textContent = "—";
+      els.price_change.className = "stage-change pending solo-change";
+      els.price_label.textContent = "Flat price (open)";
+      els.current_price.textContent = formatMoney(game.openPrice);
+      els.day_resolution.classList.add("hidden");
+    } else {
+      els.price_change.textContent = formatPct(day.change);
+      els.price_change.className =
+        "stage-change solo-change " + (day.change >= 0 ? "up" : "down");
+      els.price_label.textContent = "Flat price (close)";
+      els.current_price.textContent = formatMoney(game.closePrice);
+      if (day.resolution) {
+        els.day_resolution.innerHTML = `<strong>Market resolved:</strong> ${day.resolution}`;
+        els.day_resolution.classList.remove("hidden");
+      } else {
+        els.day_resolution.classList.add("hidden");
+      }
+    }
     els.price_change.classList.remove("hidden");
   } else {
     els.headline_hidden.classList.remove("hidden");
     els.headline_tag.textContent = "???";
-    els.headline_tag.className = "headline-tag tag-hidden";
-    els.headline_text.textContent = "";
-    els.headline_context.classList.add("hidden");
+    els.headline_tag.className = "news-tag tag-hidden";
+    const headlinesEl = document.getElementById("headlines-list");
+    if (headlinesEl) {
+      headlinesEl.innerHTML = "";
+      headlinesEl.classList.add("hidden");
+    }
+    els.trade_prompt.classList.add("hidden");
+    els.day_resolution.classList.add("hidden");
     els.price_change.classList.add("hidden");
   }
-
-  els.current_price.textContent = formatMoney(priceInfo.price);
 }
 
 function updateUI() {
   const day = game.currentDay;
   const startCash = game.scenario.meta.startingCash;
-  const pnl = game.portfolioValue - startCash;
+  const markPrice = awaitingAction ? game.openPrice : game.closePrice;
+  const pnl = game.portfolioValueAt(markPrice) - startCash;
 
   els.day_counter.textContent = `Day ${game.dayIndex + 1} / ${game.totalDays}`;
   updateHeadlinePanel();
@@ -296,9 +191,9 @@ function updateUI() {
   els.stat_cash.textContent = formatMoney(game.cash);
   els.stat_shares.textContent = game.shares.toFixed(4);
   els.stat_exposure.textContent = formatExposure(game.exposure);
-  els.stat_portfolio.textContent = formatMoney(game.portfolioValue);
+  els.stat_portfolio.textContent = formatMoney(game.portfolioValueAt(markPrice));
   els.stat_pnl.textContent = `${pnl >= 0 ? "+" : ""}${formatMoney(pnl)}`;
-  els.stat_pnl.className = "stat-value " + (pnl >= 0 ? "up" : "down");
+  els.stat_pnl.className = "stat-val pnl-val " + (pnl >= 0 ? "up" : "down");
   els.dm_note.textContent = day.dmNote || "";
 
   const canInteract = awaitingAction && (!dmMode || headlineRevealed);
@@ -306,14 +201,23 @@ function updateUI() {
   els.btn_confirm.disabled = !canInteract;
   els.btn_reveal.classList.toggle("hidden", !dmMode || headlineRevealed);
   els.btn_next.disabled = awaitingAction;
+  els.btn_next.textContent = awaitingAction
+    ? "Next Day →"
+    : game.isLastDay
+      ? "See Results"
+      : "Next Day →";
 
   if (awaitingAction && canInteract) {
     pendingExposure = game.exposure;
     els.exposure_slider.value = Math.round(pendingExposure * 100);
     updateExposurePreview(Math.round(pendingExposure * 100));
+    els.btn_confirm.textContent = "Lock exposure";
+  } else if (!awaitingAction) {
+    els.btn_confirm.textContent = "Locked";
   }
 
-  chart.setData(game.getChartData(), game.getExposureChartData());
+  const chartEnd = awaitingAction ? game.dayIndex + 1 : game.dayIndex + 2;
+  chart.setData(game.prices.slice(0, chartEnd), game.getExposureChartData());
   renderActionLog();
 }
 
@@ -354,7 +258,7 @@ function handleNext() {
 
 function showEndScreen() {
   const r = game.getResults();
-  const scenario = SCENARIO;
+  const scenario = game.scenario;
   const archetypes = TradingGame.simulateArchetypes(scenario);
 
   els.end_subtitle.textContent = `${scenario.meta.title} — scenario complete`;
@@ -408,7 +312,7 @@ function showEndScreen() {
 }
 
 function startGame() {
-  const scenario = SCENARIO;
+  const scenario = buildSession();
   game = new TradingGame(scenario);
   dmMode = els.dm_mode_toggle.checked;
   headlineRevealed = !dmMode;

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Practice — Pipeline Pulse</title>
+    <link rel="stylesheet" href="css/multiplayer.css" />
+  </head>
+  <body>
+    <a href="index.html" class="back-link">← Home</a>
+
+    <section id="screen-start" class="solo-screen">
+      <div class="host-app">
+        <div class="host-top">
+          <div class="host-brand">
+            <h1>Pipeline Pulse</h1>
+            <p>Practice · US Gulf crude flat price</p>
+          </div>
+        </div>
+
+        <div class="host-stage solo-start">
+          <span class="landing-badge">Solo · Flat-price crude</span>
+          <h2 id="scenario-title" class="stage-lobby-title">Pipeline Pulse</h2>
+          <p id="scenario-subtitle" class="solo-subtitle"></p>
+          <p id="start-description" class="stage-hint solo-desc"></p>
+
+          <label class="solo-toggle">
+            <input type="checkbox" id="dm-mode-toggle" />
+            <span>DM / Host mode <em>(hide headlines until reveal)</em></span>
+          </label>
+
+          <ul class="solo-rules">
+            <li>$10,000 starting cash — trade <strong>UGEB flat price</strong> ($/bbl)</li>
+            <li>Flat price only: no futures, spreads, or rolls — just spot crude exposure</li>
+            <li>Each day: set exposure from <strong>100% short</strong> to <strong>100% long</strong></li>
+            <li>Each day: <strong>3–4 global headlines</strong> — trade WTI flat price ($/bbl)</li>
+          </ul>
+
+          <button id="btn-start" class="mp-btn mp-btn-primary solo-start-btn">Start session</button>
+
+          <div class="solo-leaderboard">
+            <h3 class="solo-section-label">Practice leaderboard</h3>
+            <div id="leaderboard-start" class="standings-list solo-lb"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-game" class="solo-screen hidden">
+      <div class="host-app">
+        <div class="host-top">
+          <div class="host-brand">
+            <h1 id="scenario-title-game">Pipeline Pulse</h1>
+            <p>Practice · flat price · $/barrel · spot crude only</p>
+          </div>
+          <div class="host-pin-block">
+            <div class="host-pin-label">SESSION</div>
+            <div id="day-counter" class="host-pin solo-day">Day 1 / 10</div>
+          </div>
+        </div>
+
+        <div class="host-stage solo-game">
+          <article class="terminal-panel headline-panel solo-headline">
+            <div class="headline-panel-top">
+              <span id="headline-tag" class="news-tag">REPORT</span>
+              <span id="date-label" class="news-date">Mar 3</span>
+              <span id="price-change" class="stage-change pending solo-change">—</span>
+            </div>
+            <div id="headline-hidden" class="solo-headline-hidden hidden">
+              <p>Headlines hidden — reveal when ready</p>
+              <button id="btn-reveal" class="mp-btn mp-btn-warn">Reveal headlines</button>
+            </div>
+            <div id="headlines-list" class="headlines-list"></div>
+            <p id="trade-prompt" class="trade-prompt hidden"></p>
+            <div id="day-resolution" class="resolution-box hidden"></div>
+            <div class="solo-price-row">
+              <span id="price-label" class="stat-key">Flat price (open)</span>
+              <span id="current-price" class="stage-price">$72.00</span>
+            </div>
+          </article>
+
+          <div class="market-strip">
+            <div class="market-stat">
+              <span class="stat-key">Cash</span>
+              <span id="stat-cash" class="stat-val">$10,000.00</span>
+            </div>
+            <div class="market-stat">
+              <span class="stat-key">Barrels</span>
+              <span id="stat-shares" class="stat-val">0.0000</span>
+            </div>
+            <div class="market-stat">
+              <span class="stat-key">Exposure</span>
+              <span id="stat-exposure" class="stat-val">Flat</span>
+            </div>
+            <div class="market-stat">
+              <span class="stat-key">Portfolio</span>
+              <span id="stat-portfolio" class="stat-val">$10,000.00</span>
+            </div>
+            <div class="market-stat solo-pnl-stat">
+              <span class="stat-key">P&amp;L</span>
+              <span id="stat-pnl" class="stat-val pnl-val up">+$0.00</span>
+            </div>
+          </div>
+
+          <article class="terminal-panel order-panel">
+            <div class="order-panel-head">
+              <div>
+                <p class="panel-eyebrow">Order ticket</p>
+                <h2 class="order-title">Flat price exposure</h2>
+              </div>
+              <div id="exposure-value" class="exposure-readout flat">0%</div>
+            </div>
+            <p id="exposure-direction" class="exposure-direction">Neutral · no position</p>
+
+            <div class="trader-slider-wrap">
+              <input type="range" id="exposure-slider" class="trader-slider" min="-100" max="100" value="0" step="5" />
+              <div class="trader-slider-labels">
+                <span>−100% short</span>
+                <span>Flat</span>
+                <span>+100% long</span>
+              </div>
+            </div>
+
+            <div id="exposure-preview" class="trader-exposure-track"></div>
+          </article>
+
+          <div class="host-chart-wrap">
+            <p class="solo-chart-label">WTI flat price ($/bbl)</p>
+            <canvas id="price-chart"></canvas>
+          </div>
+
+          <div id="dm-panel" class="dm-box">
+            <strong>DM notes</strong>
+            <p id="dm-note"></p>
+          </div>
+
+          <div class="solo-log">
+            <h3 class="solo-section-label">Trade log</h3>
+            <ul id="action-log" class="action-log"></ul>
+          </div>
+
+          <div class="host-controls">
+            <span class="host-status">Set exposure, then lock or advance</span>
+            <button id="btn-confirm" class="mp-btn mp-btn-success">Lock exposure</button>
+            <button id="btn-next" class="mp-btn mp-btn-primary" disabled>Next day</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="screen-end" class="solo-screen hidden">
+      <div class="host-app">
+        <div class="host-top">
+          <div class="host-brand">
+            <h1>Scenario complete</h1>
+            <p id="end-subtitle" class="solo-subtitle">How did you do?</p>
+          </div>
+        </div>
+
+        <div class="host-stage solo-end">
+          <div id="end-summary"></div>
+          <div id="end-comparison" class="solo-comparison"></div>
+
+          <h3 class="solo-section-label">Archetype comparison</h3>
+          <div id="end-archetypes" class="solo-archetypes"></div>
+
+          <h3 class="solo-section-label">Your trade log</h3>
+          <ul id="end-actions" class="action-log"></ul>
+
+          <div class="solo-save">
+            <input id="player-name" class="player-input" type="text" placeholder="Your name" maxlength="24" />
+            <button id="btn-save-score" class="mp-btn mp-btn-ghost">Save score</button>
+          </div>
+
+          <div class="solo-leaderboard">
+            <h3 class="solo-section-label">Leaderboard</h3>
+            <div id="leaderboard-end" class="standings-list solo-lb"></div>
+          </div>
+
+          <button id="btn-restart" class="mp-btn mp-btn-primary solo-start-btn">Back to menu</button>
+        </div>
+      </div>
+    </section>
+
+    <script src="js/scenario-headlines-global.js"></script>
+    <script src="js/scenarios.js"></script>
+    <script src="js/game.js"></script>
+    <script src="js/format.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

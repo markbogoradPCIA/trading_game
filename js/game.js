@@ -37,33 +37,40 @@ class TradingGame {
     return this.scenario.days[this.dayIndex] ?? null;
   }
 
+  get openPrice() {
+    return this.prices[this.dayIndex]?.price ?? this.prices[0].price;
+  }
+
+  get closePrice() {
+    return this.prices[this.dayIndex + 1]?.price ?? this.openPrice;
+  }
+
   get currentPrice() {
-    return this.prices[this.dayIndex + 1]?.price ?? this.prices[0].price;
+    return this.closePrice;
+  }
+
+  portfolioValueAt(price) {
+    return this.cash + this.shares * price;
   }
 
   get portfolioValue() {
-    return this.cash + this.shares * this.currentPrice;
+    return this.portfolioValueAt(this.closePrice);
   }
 
   get exposure() {
-    const pv = this.portfolioValue;
+    const pv = this.portfolioValueAt(this.openPrice);
     if (pv === 0) return 0;
-    return (this.shares * this.currentPrice) / pv;
-  }
-
-  get totalDays() {
-    return this.scenario.days.length;
-  }
-
-  get isLastDay() {
-    return this.dayIndex >= this.totalDays - 1;
+    return (this.shares * this.openPrice) / pv;
   }
 
   setExposure(targetExposure) {
+    return this.setExposureAtPrice(targetExposure, this.openPrice);
+  }
+
+  setExposureAtPrice(targetExposure, price) {
     if (this.finished) return null;
 
     targetExposure = Math.max(-1, Math.min(1, targetExposure));
-    const price = this.currentPrice;
     const portfolioValue = this.cash + this.shares * price;
     const newShares = (targetExposure * portfolioValue) / price;
 
@@ -74,6 +81,14 @@ class TradingGame {
     return this._recordAction(targetExposure, price);
   }
 
+  get totalDays() {
+    return this.scenario.days.length;
+  }
+
+  get isLastDay() {
+    return this.dayIndex >= this.totalDays - 1;
+  }
+
   _recordAction(exposure, price) {
     const action = {
       day: this.currentDay.day,
@@ -81,7 +96,7 @@ class TradingGame {
       exposure,
       exposurePct: Math.round(exposure * 100),
       price,
-      portfolioValue: this.portfolioValue,
+      portfolioValue: this.portfolioValueAt(price),
     };
     this.actions.push(action);
     this.exposureHistory.push({
@@ -176,10 +191,16 @@ class TradingGame {
 
   static simulateArchetypes(scenario) {
     if (!scenario.archetypes) return [];
-    return scenario.archetypes.map((arch) => ({
-      name: arch.name,
-      description: arch.description,
-      ...TradingGame.simulate(scenario, arch.exposures),
-    }));
+    return scenario.archetypes.map((arch) => {
+      const exposures = scenario.days.map((day) => {
+        const aligned = day.aligned?.[arch.key];
+        return aligned != null ? aligned : arch.defaultExposure ?? 0;
+      });
+      return {
+        name: arch.name,
+        description: arch.description,
+        ...TradingGame.simulate(scenario, exposures),
+      };
+    });
   }
 }

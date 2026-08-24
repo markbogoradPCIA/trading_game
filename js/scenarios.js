@@ -1,221 +1,254 @@
-const SCENARIO = {
-  id: "pipeline",
-  meta: {
-    title: "Pipeline Pulse",
-    subtitle: "US Crude Export Crisis — March 2026",
-    asset: "US Gulf Export Blend (UGEB)",
-    unit: "barrel",
-    startPrice: 72.0,
-    startingCash: 10000,
-      description:
-        "A fictional month trading US Gulf crude at the flat price ($/bbl). No futures, spreads, or rolls — just spot exposure to UGEB as pipeline and export news hits the market.",
-  },
-    archetypes: [
-      {
-        name: "Aggressive",
-        description: "Stays heavily long, holds through fear, chases momentum",
-        exposures: [
-          0.8, 0.9, 0.9, 0.7, 0.8, 1.0, 1.0, 1.0, 0.8, 0.7, 0.9, 0.9, 0.9, 0.9, 0.9, 1.0, 1.0,
-          1.0, 0.9, 1.0,
-        ],
-      },
-      {
-        name: "Defensive",
-        description: "Low exposure, goes flat on shocks, misses most of the rally",
-        exposures: [
-          0.3, 0.3, 0.2, 0.2, 0.3, 0.0, 0.1, 0.2, 0.0, 0.1, 0.0, 0.0, 0.0, 0.0, 0.2, 0.3, 0.4, 0.4,
-          0.3, 0.3,
-        ],
-      },
-      {
-        name: "Contrarian",
-        description: "Shorts euphoria, buys capitulation, fades the crowd",
-        exposures: [
-          0.2, 0.1, 0.0, 0.0, 0.0, 0.3, 0.2, -0.6, 0.0, -0.2, 0.0, 0.2, 0.8, 0.9, 0.7, 0.5, 0.4, 0.3,
-          -0.3, 0.2,
-        ],
-      },
-    ],
-    days: [
-      {
-        day: 1,
-        date: "Mar 3",
-        tag: "REPORT",
-        headline: "US Gulf export terminals report record weekly shipments to Europe",
-        context: "Loading data from Houston and Louisiana ports shows Atlantic demand absorbing US barrels.",
-        change: 2.1,
-        dmNote: "Calm bullish open. Good day to explain how export demand supports domestic prices.",
-      },
-      {
-        day: 2,
-        date: "Mar 4",
-        tag: "DATA",
-        headline: "Permian-to-Gulf pipeline flows hit seasonal high, EIA data shows",
-        context: "Midstream operators report no bottlenecks on primary routes to the coast.",
-        change: 1.4,
-        dmNote: "Momentum continues. Players who leaned long yesterday feel smart.",
-      },
-      {
-        day: 3,
-        date: "Mar 5",
-        tag: "REPORT",
-        headline: "Commerce Dept: US crude exports up 18% YoY amid Atlantic supply gap",
-        context: "Official trade statistics confirm the export-led bull case.",
-        change: 0.8,
-        dmNote: "Slower grind higher. Moderate long exposure is reasonable.",
-      },
-      {
-        day: 4,
-        date: "Mar 6",
-        tag: "MARKET",
-        headline: "Gulf Coast refiners trim runs ahead of scheduled pipeline maintenance window",
-        context: "Routine maintenance season begins; traders debate whether flows will tighten.",
-        change: -0.6,
-        dmNote: "First small pullback. Tests whether players cut exposure or hold.",
-      },
-      {
-        day: 5,
-        date: "Mar 7",
-        tag: "UPDATE",
-        headline: "Weekend update: Colonial lateral inspection finds no issues, operations normal",
-        context: "No surprises over the weekend — markets breathe a sigh of relief.",
-        change: 0.3,
-        dmNote: "Non-event recovery. Reward patience.",
-      },
-      {
-        day: 6,
-        date: "Mar 10",
-        tag: "BREAKING",
-        headline: "Fire reported at major Louisiana export terminal — partial shutdown",
-        context: "Emergency crews on scene. Two loading berths offline. Cause unknown.",
-        change: 5.8,
-        dmNote: "First shock. Supply fear spike. FOMO buyers may chase — contrarians may fade.",
-      },
-      {
-        day: 7,
-        date: "Mar 11",
-        tag: "UPDATE",
-        headline: "Terminal operator: fire contained, loading suspended 48–72 hours pending inspection",
-        context: "Damage assessment underway. No injuries reported.",
-        change: 3.2,
-        dmNote: "Follow-through rally. Discuss whether to take profits or stay long.",
-      },
-      {
-        day: 8,
-        date: "Mar 12",
-        tag: "MARKET",
-        headline: "EU buyers scramble for US Gulf cargoes as terminal outage tightens Atlantic supply",
-        context: "Premium for prompt-loading Gulf barrels widens to 18-month high.",
-        change: 2.4,
-        dmNote: "Peak euphoria zone. Classic contrarian short setup.",
-      },
-      {
-        day: 9,
-        date: "Mar 13",
-        tag: "CONFIRMED",
-        headline: "Inspection complete: two berths cleared, exports resume at 60% capacity",
-        context: "Faster recovery than feared — sell-the-news pressure builds.",
-        change: -2.1,
-        dmNote: "Sell-the-news moment. Classic mean reversion setup.",
-      },
-      {
-        day: 10,
-        date: "Mar 14",
-        tag: "RUMOR",
-        headline: "Unconfirmed reports of second terminal facing delayed maintenance",
-        context: "Social media chatter, no operator statement yet. Treat with caution.",
-        change: 1.7,
-        dmNote: "Noise headline. Good day to discuss rumor vs confirmed news.",
-      },
-      {
-        day: 11,
-        date: "Mar 17",
-        tag: "POLICY",
-        headline: "White House reviewing emergency use of Strategic Pipeline Reserve for Gulf states",
-        context: "Political intervention enters the narrative — direction unclear.",
-        change: -1.2,
-        dmNote: "Policy uncertainty. Neutral exposure is a valid call.",
-      },
-      {
-        day: 12,
-        date: "Mar 18",
-        tag: "BREAKING",
-        headline: "Pipeline operator confirms unplanned pressure drop on Keystone Gulf link",
-        context: "Flows reduced pending inspection. Second supply shock in two weeks.",
-        change: -4.5,
-        dmNote: "Real supply scare #2. Tests drawdown tolerance.",
-      },
-      {
-        day: 13,
-        date: "Mar 19",
-        tag: "CONFIRMED",
-        headline: "Keystone Gulf link shut for emergency repairs — 400kbd offline indefinitely",
-        context: "Alternate routes insufficient to cover shortfall. Export forecasts slashed.",
-        change: -6.2,
-        dmNote: "Max fear day. Contrarians load up long here. Aggressive players hold.",
-      },
-      {
-        day: 14,
-        date: "Mar 20",
-        tag: "ANALYSIS",
-        headline: "Analysts slash US export forecasts; Asian buyers pivot to Middle East barrels",
-        context: "Capitulation narratives dominate financial media.",
-        change: -2.8,
-        dmNote: "Emotional difficulty of holding through red days — narrate this.",
-      },
-      {
-        day: 15,
-        date: "Mar 21",
-        tag: "UPDATE",
-        headline: "Texas Railroad Commission fast-tracks alternate route via Eagle Ford junction",
-        context: "Regulators expedite permits. First sign of structural fix.",
-        change: 1.1,
-        dmNote: "First green shoot. Easy to miss if already flat.",
-      },
-      {
-        day: 16,
-        date: "Mar 24",
-        tag: "CONFIRMED",
-        headline: "Pipeline repairs ahead of schedule — partial flows expected by week end",
-        context: "Operator guides to 70% capacity within five days.",
-        change: 3.6,
-        dmNote: "Relief rally begins. Late longs pay up.",
-      },
-      {
-        day: 17,
-        date: "Mar 25",
-        tag: "POLICY",
-        headline: "US announces expedited export licenses for Gulf terminals through Q2",
-        context: "Government actively supporting export recovery.",
-        change: 2.9,
-        dmNote: "Policy tailwind. Discuss intervention in markets.",
-      },
-      {
-        day: 18,
-        date: "Mar 26",
-        tag: "REPORT",
-        headline: "Export loadings return to 85% of pre-outage levels, ship queue clearing",
-        context: "Physical market normalizing faster than consensus expected.",
-        change: 1.5,
-        dmNote: "Steady recovery. Boring is the point.",
-      },
-      {
-        day: 19,
-        date: "Mar 27",
-        tag: "MARKET",
-        headline: "OPEC delegates privately warn US export surge is 'crowding out' market share",
-        context: "External pushback on US supply growth — minor headwind.",
-        change: -0.9,
-        dmNote: "Small dip before finale. Optional trim.",
-      },
-      {
-        day: 20,
-        date: "Mar 28",
-        tag: "REPORT",
-        headline: "Month-end: US exports set new record despite pipeline disruptions",
-        context: "Market rebalances. Crisis arc complete. Time to reveal scores.",
-        change: 1.8,
-        dmNote: "Closing day. Compare all strategies on the leaderboard.",
-      },
-    ],
-};
+const HEADLINES_PER_DAY_MIN = 3;
+const HEADLINES_PER_DAY_MAX = 4;
+const SESSION_LENGTH_DEFAULT = 10;
+const TRADE_TIMER_SECONDS = 90;
+
+/** Percent WTI move per unit of net signed impact (training simulation scale). */
+const IMPACT_TO_PCT = 0.42;
+
+const SCENARIO_HEADLINES = SCENARIO_HEADLINES_GLOBAL;
+
+const SCENARIO_POOL = {
+  id: "pipeline",
+  meta: {
+    title: "Pipeline Pulse",
+    subtitle: "WTI Flat Price — Global Fundamentals",
+    asset: "WTI Crude (flat price)",
+    unit: "barrel",
+    startPrice: 72.0,
+    startingCash: 10000,
+    sessionLength: SESSION_LENGTH_DEFAULT,
+    headlinesPerDay: { min: HEADLINES_PER_DAY_MIN, max: HEADLINES_PER_DAY_MAX },
+    tradeTimerSeconds: TRADE_TIMER_SECONDS,
+    maxPlayers: 40,
+    poolSize: SCENARIO_HEADLINES.length,
+    description:
+      "Trade WTI flat price through 10 session days. Each day delivers 3–4 global fundamentals headlines — inventories, OPEC, geopolitics, macro, and logistics — all evaluated from a WTI flat-price perspective. Lock exposure before the move, then review how the market resolved.",
+  },
+  archetypes: [
+    {
+      name: "Aggressive",
+      key: "aggressive",
+      description:
+        "Sizes up on the fundamental read — takes full directional exposure on clear inventory, refinery, and export signals",
+      defaultExposure: 0.55,
+    },
+    {
+      name: "Defensive",
+      key: "defensive",
+      description: "Stays light — partial exposure on high-conviction days, flat on ambiguous headlines",
+      defaultExposure: 0.1,
+    },
+    {
+      name: "Contrarian",
+      key: "contrarian",
+      description: "Trades against the fundamental read — benchmark for how much value correct interpretation adds",
+      defaultExposure: 0.0,
+    },
+  ],
+  days: [],
+};
+
+/** Full pool metadata — use buildSession() for a playable game. */
+const SCENARIO = SCENARIO_POOL;
+
+function _mulberry32(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function _shuffle(items, rng) {
+  const arr = items.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function expectedDirectionFromImpact(impactWeight) {
+  if (impactWeight > 0) return "bullish";
+  if (impactWeight < 0) return "bearish";
+  return "neutral";
+}
+
+function assertUniqueHeadlinePool(headlines = SCENARIO_HEADLINES) {
+  const seen = new Set();
+  const duplicates = [];
+
+  for (const headline of headlines) {
+    if (!headline.id) {
+      throw new Error("Headline missing id");
+    }
+    if (headline.impactWeight == null || Number.isNaN(headline.impactWeight)) {
+      throw new Error(`Headline ${headline.id} missing impactWeight`);
+    }
+    if (Math.abs(headline.impactWeight) > 5) {
+      throw new Error(`Headline ${headline.id} impactWeight out of range (−5…+5)`);
+    }
+    const implied = expectedDirectionFromImpact(headline.impactWeight);
+    if (
+      headline.expectedDirection &&
+      implied !== "neutral" &&
+      headline.expectedDirection !== implied
+    ) {
+      throw new Error(
+        `Headline ${headline.id}: expectedDirection (${headline.expectedDirection}) does not match impactWeight sign (${headline.impactWeight})`
+      );
+    }
+    if (seen.has(headline.id)) {
+      duplicates.push(headline.id);
+    }
+    seen.add(headline.id);
+  }
+
+  if (duplicates.length) {
+    throw new Error(`Duplicate headline ids in pool: ${duplicates.join(", ")}`);
+  }
+
+  return seen.size;
+}
+
+function publicHeadline(headline) {
+  return {
+    tag: headline.tag,
+    category: headline.category,
+    headline: headline.headline,
+    context: headline.context || null,
+  };
+}
+
+/** Sum of signed impactWeight across all headlines on the day. */
+function computeNetImpact(headlines) {
+  return headlines.reduce((total, headline) => total + (headline.impactWeight ?? 0), 0);
+}
+
+/** Convert net signed impact to simulated WTI flat-price % change. */
+function netImpactToChange(netImpact) {
+  const raw = netImpact * IMPACT_TO_PCT;
+  const capped = Math.max(-7, Math.min(7, raw));
+  return Math.round(capped * 100) / 100;
+}
+
+function alignedFromNetImpact(netImpact) {
+  if (netImpact === 0) {
+    return { aggressive: 0.05, defensive: 0, contrarian: 0 };
+  }
+
+  const sign = netImpact > 0 ? 1 : -1;
+  const magnitude = Math.min(Math.abs(netImpact) / 12, 0.55);
+
+  return {
+    aggressive: Math.round(sign * Math.max(0.2, magnitude + 0.15) * 100) / 100,
+    defensive: Math.round(sign * Math.max(0.05, magnitude * 0.35) * 100) / 100,
+    contrarian: Math.round(sign * -Math.max(0.1, magnitude * 0.45) * 100) / 100,
+  };
+}
+
+function netReadLabel(netImpact) {
+  if (netImpact >= 4) return "strongly bullish";
+  if (netImpact > 0) return "net bullish";
+  if (netImpact <= -4) return "strongly bearish";
+  if (netImpact < 0) return "net bearish";
+  return "approximately balanced";
+}
+
+function buildDayResolution(headlines, change, netImpact) {
+  const directionWord = change >= 0 ? "up" : "down";
+  const sign = change >= 0 ? "+" : "";
+  const reads = headlines
+    .map((headline) => `• **${headline.category}:** ${headline.reason}`)
+    .join("\n");
+
+  return `WTI ${directionWord} ${sign}${change}%. Today's news flow was ${netReadLabel(netImpact)} for flat price:\n${reads}`;
+}
+
+function buildCompositeDay(headlines, dayIndex) {
+  const netImpact = computeNetImpact(headlines);
+  const change = netImpactToChange(netImpact);
+
+  return {
+    id: `session-day-${dayIndex + 1}`,
+    day: dayIndex + 1,
+    date: _sessionDate(dayIndex),
+    headlines: headlines.map(publicHeadline),
+    headlineIds: headlines.map((headline) => headline.id),
+    prompt: "Given today's headlines, what's your first-order read for WTI flat price?",
+    netImpact,
+    change,
+    resolution: buildDayResolution(headlines, change, netImpact),
+    dmNote: headlines
+      .map((headline) => `${headline.category}: ${headline.reason} (${headline.difficulty})`)
+      .join(" · "),
+    aligned: alignedFromNetImpact(netImpact),
+  };
+}
+
+function pickHeadlinesPerDay(rng) {
+  const span = HEADLINES_PER_DAY_MAX - HEADLINES_PER_DAY_MIN + 1;
+  return HEADLINES_PER_DAY_MIN + Math.floor(rng() * span);
+}
+
+function _sessionDate(offset) {
+  const d = new Date(2026, 2, 3 + offset);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
+/**
+ * Build a shuffled session: 10 trading days, each with 3–4 headlines from the pool.
+ * @param {{ length?: number, seed?: number, headlinesPerDay?: number }} options
+ */
+function buildSession(options = {}) {
+  const length = options.length ?? SCENARIO_POOL.meta.sessionLength ?? SESSION_LENGTH_DEFAULT;
+  const rng = options.seed != null ? _mulberry32(options.seed) : () => Math.random();
+  const poolSize = assertUniqueHeadlinePool();
+
+  const minHeadlinesNeeded = length * HEADLINES_PER_DAY_MIN;
+  if (poolSize < minHeadlinesNeeded) {
+    throw new Error(
+      `Headline pool (${poolSize}) is smaller than minimum needed (${minHeadlinesNeeded}) for ${length} days`
+    );
+  }
+
+  const shuffled = _shuffle(SCENARIO_HEADLINES, rng);
+  let cursor = 0;
+  const days = [];
+
+  for (let i = 0; i < length; i++) {
+    const count = options.headlinesPerDay ?? pickHeadlinesPerDay(rng);
+
+    if (cursor + count > shuffled.length) {
+      throw new Error(
+        `Not enough unique headlines remaining (need ${count}, have ${shuffled.length - cursor})`
+      );
+    }
+
+    const group = shuffled.slice(cursor, cursor + count);
+    cursor += count;
+    days.push(buildCompositeDay(group, i));
+  }
+
+  SCENARIO_POOL.meta.poolSize = poolSize;
+
+  return {
+    id: SCENARIO_POOL.id,
+    meta: {
+      ...SCENARIO_POOL.meta,
+      sessionLength: length,
+      poolSize,
+      sessionSeed: options.seed ?? null,
+      sessionDayIds: days.map((day) => day.id),
+      sessionHeadlineIds: days.flatMap((day) => day.headlineIds),
+    },
+    days,
+    archetypes: SCENARIO_POOL.archetypes,
+  };
+}
+
+assertUniqueHeadlinePool();
+

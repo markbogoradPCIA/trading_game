@@ -1,0 +1,15 @@
+{
+  "name": "pipeline-pulse",
+  "version": "1.0.0",
+  "description": "Multiplayer flat-price crude trading game",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.0"
+  }
+}
