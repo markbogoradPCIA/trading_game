@@ -70,6 +70,109 @@ function _shuffle(items, rng) {
   return arr;
 }
 
+/** Categories with 3+ headlines need explicit sub-groups (mutually exclusive pairs). */
+const CONFLICT_GROUP_BY_ID = {
+  "china-imports-record-121": "china-imports",
+  "china-imports-fall-95": "china-imports",
+  "china-throughput-record-155": "china-refining",
+  "china-runs-fall-10": "china-refining",
+  "opec-cut-12-additional": "opec-policy",
+  "opec-increase-12": "opec-policy",
+  "opec-output-below-target-800": "opec-compliance",
+  "opec-output-above-quota-900": "opec-compliance",
+  "opec-postpone-increase": "opec-timing",
+  "opec-forward-increase": "opec-timing",
+  "global-pmi-expansion": "global-pmi",
+  "global-pmi-contraction": "global-pmi",
+  "global-growth-upgraded": "global-growth",
+  "recession-forecasts-rise": "global-growth",
+};
+
+function buildConflictGroupMap(headlines = SCENARIO_HEADLINES) {
+  const byCategory = {};
+  for (const headline of headlines) {
+    if (!byCategory[headline.category]) byCategory[headline.category] = [];
+    byCategory[headline.category].push(headline);
+  }
+
+  const map = new Map();
+  for (const headline of headlines) {
+    let group = headline.conflictGroup || CONFLICT_GROUP_BY_ID[headline.id];
+    if (!group) {
+      const peers = byCategory[headline.category] || [];
+      group = peers.length === 2 ? `cat:${headline.category}` : headline.id;
+    }
+    map.set(headline.id, group);
+  }
+  return map;
+}
+
+const HEADLINE_CONFLICT_GROUPS = buildConflictGroupMap();
+
+function headlinesConflict(a, b, groupMap = HEADLINE_CONFLICT_GROUPS) {
+  if (!a || !b || a.id === b.id) return true;
+  return groupMap.get(a.id) === groupMap.get(b.id);
+}
+
+function isCompatibleDayGroup(headlines, groupMap = HEADLINE_CONFLICT_GROUPS) {
+  for (let i = 0; i < headlines.length; i++) {
+    for (let j = i + 1; j < headlines.length; j++) {
+      if (headlinesConflict(headlines[i], headlines[j], groupMap)) return false;
+    }
+  }
+  return true;
+}
+
+function pickCompatibleDayHeadlines(remaining, count, rng, groupMap = HEADLINE_CONFLICT_GROUPS) {
+  if (remaining.length < count) {
+    throw new Error(`Not enough headlines remaining (need ${count}, have ${remaining.length})`);
+  }
+
+  for (let attempt = 0; attempt < 80; attempt++) {
+    const order =
+      attempt === 0 ? remaining : _shuffle(remaining, rng);
+    const group = [];
+    const pickedIndices = [];
+
+    for (let i = 0; i < order.length && group.length < count; i++) {
+      const candidate = order[i];
+      const realIndex = remaining.indexOf(candidate);
+      if (realIndex === -1) continue;
+      if (group.every((h) => !headlinesConflict(h, candidate, groupMap))) {
+        group.push(candidate);
+        pickedIndices.push(realIndex);
+      }
+    }
+
+    if (group.length === count) {
+      pickedIndices.sort((a, b) => b - a);
+      for (const idx of pickedIndices) remaining.splice(idx, 1);
+      return group;
+    }
+  }
+
+  throw new Error(
+    `Could not pick ${count} compatible headlines from ${remaining.length} remaining`
+  );
+}
+
+function validateSession(session, groupMap = HEADLINE_CONFLICT_GROUPS) {
+  const issues = [];
+  for (const day of session.days) {
+    const ids = day.headlineIds || [];
+    const headlines = ids.map((id) => SCENARIO_HEADLINES.find((h) => h.id === id)).filter(Boolean);
+    if (headlines.length !== ids.length) {
+      issues.push(`Day ${day.day}: unknown headline id in session`);
+      continue;
+    }
+    if (!isCompatibleDayGroup(headlines, groupMap)) {
+      const groups = headlines.map((h) => `${h.id} (${groupMap.get(h.id)})`);
+      issues.push(`Day ${day.day}: conflicting headlines — ${groups.join(", ")}`);
+    }
+  }
+  return issues;
+}
+
 function expectedDirectionFromImpact(impactWeight) {
   if (impactWeight > 0) return "bullish";
   if (impactWeight < 0) return "bearish";
@@ -213,26 +316,16 @@ function buildSession(options = {}) {
   }
 
   const shuffled = _shuffle(SCENARIO_HEADLINES, rng);
-  let cursor = 0;
+  const remaining = shuffled.slice();
   const days = [];
 
   for (let i = 0; i < length; i++) {
     const count = options.headlinesPerDay ?? pickHeadlinesPerDay();
-
-    if (cursor + count > shuffled.length) {
-      throw new Error(
-        `Not enough unique headlines remaining (need ${count}, have ${shuffled.length - cursor})`
-      );
-    }
-
-    const group = shuffled.slice(cursor, cursor + count);
-    cursor += count;
+    const group = pickCompatibleDayHeadlines(remaining, count, rng);
     days.push(buildCompositeDay(group, i));
   }
 
-  SCENARIO_POOL.meta.poolSize = poolSize;
-
-  return {
+  const session = {
     id: SCENARIO_POOL.id,
     meta: {
       ...SCENARIO_POOL.meta,
@@ -245,6 +338,15 @@ function buildSession(options = {}) {
     days,
     archetypes: SCENARIO_POOL.archetypes,
   };
+
+  const sanityIssues = validateSession(session);
+  if (sanityIssues.length) {
+    throw new Error(`Session failed headline sanity check:\n${sanityIssues.join("\n")}`);
+  }
+
+  SCENARIO_POOL.meta.poolSize = poolSize;
+
+  return session;
 }
 
 assertUniqueHeadlinePool();

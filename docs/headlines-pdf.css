@@ -1,0 +1,52 @@
+body {
+  font-family: "Segoe UI", Helvetica, Arial, sans-serif;
+  font-size: 9pt;
+  line-height: 1.35;
+  color: #111;
+  margin: 24px;
+}
+
+h1 {
+  font-size: 16pt;
+  margin: 0 0 12px;
+}
+
+h2 {
+  font-size: 12pt;
+  margin: 16px 0 8px;
+  page-break-after: avoid;
+}
+
+h3 {
+  font-size: 10pt;
+  margin: 14px 0 6px;
+  page-break-after: avoid;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8pt;
+  margin: 10px 0 16px;
+}
+
+th,
+td {
+  border: 1px solid #ccc;
+  padding: 3px 5px;
+  vertical-align: top;
+}
+
+th {
+  background: #f3f4f6;
+}
+
+tr:nth-child(even) td {
+  background: #fafafa;
+}
+
+p {
+  margin: 0 0 12px;
+  font-size: 8.5pt;
+  color: #444;
+}

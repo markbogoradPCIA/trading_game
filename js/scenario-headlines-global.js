@@ -1,5 +1,5 @@
 /**
- * Global WTI headline pool (80 signals).
+ * Global WTI headline pool (85 signals).
  *
  * Required: id, tag, category, headline, context, expectedDirection,
  *           difficulty, reason, impactWeight
@@ -8,7 +8,7 @@
  *   Positive = bullish WTI, negative = bearish WTI.
  *   |1| weak · |2| moderate · |3| strong · |4| very strong · |5| major shock
  *
- * Optional: dmNote
+ * Optional: dmNote, conflictGroup (mutually exclusive with same group on one day)
  *
  * Session days bundle 3–4 headlines; netImpact = Σ impactWeight drives the day's WTI move.
  * Do not expose impactWeight or netImpact to players in the UI.
@@ -894,5 +894,60 @@ const SCENARIO_HEADLINES_GLOBAL = [
     impactWeight: -4,
     difficulty: "Medium",
     reason: "Broad persistent inventory accumulation indicates global surplus",
+  },
+  {
+    id: "drone-strike-ras-tanura",
+    tag: "BREAKING",
+    category: "Geopolitics / Mideast",
+    headline: "Drone Swarm Strike Hits Saudi Ras Tanura Export Hub; 5mbd of Loadings Halted",
+    context: "Multiple facilities damaged. Kingdom declares force majeure on key export terminals.",
+    expectedDirection: "bullish",
+    impactWeight: 5,
+    difficulty: "Medium",
+    reason: "Catastrophic disruption to world's largest crude export complex",
+  },
+  {
+    id: "panama-canal-transit-halt",
+    tag: "BREAKING",
+    category: "Panama Canal",
+    headline: "Panama Canal Transit Suspended Indefinitely After Major Lock Failure",
+    context: "Roughly 2mbd of seaborne trade normally transits the canal. Reroutes add 10–14 days to Asia–Atlantic voyages.",
+    expectedDirection: "bullish",
+    impactWeight: 5,
+    difficulty: "Medium",
+    reason: "Critical global chokepoint outage tightens effective supply and freight",
+  },
+  {
+    id: "hormuz-transit-halted",
+    tag: "BREAKING",
+    category: "Strait of Hormuz",
+    headline: "Strait of Hormuz Tanker Traffic Halted After Naval Clash; 15mbd Flows at Risk",
+    context: "Insurance withdrawn on Gulf loadings. VLCC rates spike 300% within hours.",
+    expectedDirection: "bullish",
+    impactWeight: 5,
+    difficulty: "Medium",
+    reason: "World's most important crude transit route effectively closed",
+  },
+  {
+    id: "red-sea-ceasefire-backlog-clear",
+    tag: "BREAKING",
+    category: "Red Sea / Geopolitics",
+    headline: "Houthi Ceasefire Reopens Red Sea; 80 Stranded VLCCs Unload 140mb Crude Backlog",
+    context: "Bab el-Mandeb transit resumes after six-week disruption. Middle East cargoes race to discharge at Asian refineries.",
+    expectedDirection: "bearish",
+    impactWeight: -5,
+    difficulty: "Medium",
+    reason: "Sudden flood of delayed Gulf and Red Sea crude hits global market",
+  },
+  {
+    id: "venezuela-sanctions-waiver-700",
+    tag: "BREAKING",
+    category: "Venezuela",
+    headline: "U.S. Issues Broad Venezuela Oil Sanctions Waiver; PDVSA Export Capacity to Rise 700kbd",
+    context: "Western majors cleared to lift and market Venezuelan crude. First cargoes scheduled within 30 days.",
+    expectedDirection: "bearish",
+    impactWeight: -5,
+    difficulty: "Medium",
+    reason: "Major new source of sanctioned supply re-enters Atlantic Basin market",
   },
 ];
