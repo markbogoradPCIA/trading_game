@@ -10,7 +10,7 @@
 
     <title>Host — Pipeline Pulse</title>
 
-    <link rel="stylesheet" href="css/multiplayer.css?v=20260824" />
+    <link rel="stylesheet" href="css/multiplayer.css?v=20261028" />
 
   </head>
 
@@ -68,7 +68,7 @@
 
               <p class="lobby-capacity"><span id="lobby-capacity">0 / 40</span> traders connected</p>
 
-              <p class="lobby-session-note">Each trading day includes <strong>3 headlines</strong>. Players have <strong>2 minutes</strong> to lock exposure once headlines are revealed.</p>
+              <p class="lobby-session-note">Each trading day includes <strong>3 headlines</strong>. Players have <strong>2 minutes</strong> to lock exposure once headlines are revealed. After 10 days, Rematch starts a fresh $10,000 book and the series leaderboard keeps every game.</p>
 
             </div>
 
@@ -145,16 +145,19 @@
 
 
           <div id="stage-podium" class="hidden">
-
-            <h2 class="section-title">Final standings</h2>
-
+            <h2 id="podium-title" class="section-title">Game complete</h2>
+            <p class="series-note">This game</p>
             <div id="podium-list" class="standings-list"></div>
-
+            <div id="stage-series" class="series-board">
+              <h2 class="section-title">Series leaderboard</h2>
+              <p class="series-note">Ranked by total P&amp;L across games</p>
+              <div id="series-list" class="standings-list"></div>
+            </div>
           </div>
 
 
 
-          <div class="host-chart-wrap">
+          <div id="host-chart-wrap" class="host-chart-wrap">
 
             <canvas id="host-chart"></canvas>
 
@@ -171,6 +174,7 @@
             <button id="btn-standings" class="mp-btn mp-btn-primary hidden">Show standings</button>
 
             <button id="btn-next" class="mp-btn mp-btn-success hidden">Next day</button>
+            <button id="btn-rematch" class="mp-btn mp-btn-primary hidden">Rematch</button>
 
           </div>
 
@@ -183,11 +187,11 @@
 
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="js/format.js?v=20260824"></script>
+    <script src="js/format.js?v=20261028"></script>
 
-    <script src="js/chart.js?v=20260824"></script>
+    <script src="js/chart.js?v=20261028"></script>
 
-    <script src="js/host.js?v=20260824"></script>
+    <script src="js/host.js?v=20261028"></script>
 
   </body>
 

@@ -3,7 +3,8 @@
  * Run: node scripts/smoke-test.js
  */
 const { loadEngine } = require("../lib/engine");
-const { RoomManager } = require("../lib/room-manager");
+const { RoomManager, getPublicState } = require("../lib/room-manager");
+const { rankByPnl } = require("../lib/series");
 
 const MEGA_IDS = [
   "drone-strike-ras-tanura",
@@ -144,7 +145,92 @@ try {
   if (SCENARIO_POOL.meta.poolSize === 85) ok("SCENARIO_POOL.meta.poolSize = 85");
   else fail(`meta.poolSize is ${SCENARIO_POOL.meta.poolSize}, expected 85`);
 
-  console.log(`\n${"—".repeat(40)}`);
+  
+  console.log("\n8. Rematch and series leaderboard");
+  const tied = rankByPnl([
+    { id: "a", name: "Ann", pnl: 10 },
+    { id: "b", name: "Bob", pnl: 10 },
+    { id: "c", name: "Cara", pnl: 4 },
+  ]);
+  if (tied.map((row) => row.rank).join(",") === "1,1,3") ok("Tied P&L shares first place");
+  else fail("Tie ranks", tied.map((row) => row.rank).join(","));
+
+  const seriesRooms = new RoomManager();
+  const seriesRoom = seriesRooms.createRoom("host-series");
+  const ada = seriesRooms.joinRoom(seriesRoom.code, "Ada", "ada");
+  const bea = seriesRooms.joinRoom(seriesRoom.code, "Bea", "bea");
+  if (ada.error || bea.error) fail("Series join", ada.error || bea.error);
+  else ok("Two players join for a series");
+
+  const early = seriesRooms.rematch(seriesRoom.code);
+  if (early.error) ok("Rematch waits until a game finishes");
+  else fail("Rematch should be blocked in the lobby");
+
+  function revealAndLock(exposures) {
+    const revealed = seriesRooms.revealHeadline(seriesRoom.code);
+    if (revealed.error) throw new Error(revealed.error);
+    for (const [id, exposure] of Object.entries(exposures)) {
+      const submitted = seriesRooms.submitExposure(seriesRoom.code, id, exposure);
+      if (submitted.error) throw new Error(submitted.error);
+    }
+  }
+
+  function playDays() {
+    const days = seriesRooms.getRoom(seriesRoom.code).sessionScenario.days.length;
+    for (let i = 0; i < days; i++) {
+      const next = seriesRooms.nextDay(seriesRoom.code);
+      if (next.error) throw new Error(next.error);
+    }
+  }
+
+  const started = seriesRooms.startGame(seriesRoom.code);
+  if (started.error) fail("Start series game", started.error);
+  revealAndLock({ ada: 1, bea: -1 });
+  playDays();
+  if (seriesRooms.getRoom(seriesRoom.code).phase === "finished") ok("First 10-day game records a finish");
+  else fail("First game did not finish");
+
+  const blockedStart = seriesRooms.startGame(seriesRoom.code);
+  if (blockedStart.error) ok("A new game starts only from the lobby");
+  else fail("startGame should not reset a finished series");
+
+  const again = seriesRooms.rematch(seriesRoom.code);
+  if (again.error) fail("Rematch", again.error);
+  else ok("Rematch starts the next game");
+
+  const fresh = seriesRooms.getRoom(seriesRoom.code);
+  const adaBook = fresh.players.get("ada").game;
+  if (fresh.gameNumber === 2 && fresh.phase === "playing" && fresh.completedGames.length === 1) {
+    ok("Series keeps game 1 and opens game 2");
+  } else fail("Series state after rematch");
+  if (adaBook.cash === 10000 && adaBook.shares === 0 && fresh.dayIndex === 0) ok("Rematch resets the book to $10,000");
+  else fail("Book was not reset", `cash ${adaBook.cash} shares ${adaBook.shares}`);
+
+  const blockedMid = seriesRooms.rematch(seriesRoom.code);
+  if (blockedMid.error) ok("Rematch waits while a game is in progress");
+  else fail("Rematch should be blocked during play");
+
+  revealAndLock({ ada: -1, bea: 1 });
+  playDays();
+
+  const done = seriesRooms.getRoom(seriesRoom.code);
+  const [gameOne, gameTwo] = done.completedGames;
+  const board = getPublicState(done, { forHost: true }).series;
+  const roundMoney = (n) => Math.round(n * 100) / 100;
+  let seriesOk = done.completedGames.length === 2 && board.length === 2;
+  for (const id of ["ada", "bea"]) {
+    const first = gameOne.results.find((row) => row.id === id);
+    const second = gameTwo.results.find((row) => row.id === id);
+    const row = board.find((entry) => entry.id === id);
+    const wins = (first.rank === 1 ? 1 : 0) + (second.rank === 1 ? 1 : 0);
+    if (!row || row.games !== 2 || row.wins !== wins || row.totalPnl !== roundMoney(first.pnl + second.pnl)) {
+      seriesOk = false;
+    }
+  }
+  if (seriesOk) ok("Leaderboard sums P&L and wins across both games");
+  else fail("Series totals", JSON.stringify(board));
+
+console.log(`\n${"—".repeat(40)}`);
   console.log(`Passed: ${passed}  Failed: ${failed}`);
   process.exit(failed > 0 ? 1 : 0);
 } catch (err) {

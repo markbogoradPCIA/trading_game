@@ -116,3 +116,13 @@ function renderDayResolution(data) {
       <ul class="resolution-signal-list">${signals}</ul>
     </div>`;
 }
+
+function standingRanks(players) {
+  const ranks = [];
+  let rank = 1;
+  players.forEach((player, index) => {
+    if (index > 0 && player.pnl !== players[index - 1].pnl) rank = index + 1;
+    ranks.push(rank);
+  });
+  return ranks;
+}

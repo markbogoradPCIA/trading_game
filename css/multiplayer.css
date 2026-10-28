@@ -748,6 +748,47 @@ body {
   font-weight: 500;
 }
 
+
+.series-board {
+  margin-top: 28px;
+}
+
+.series-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 600;
+  margin: -12px 0 16px;
+}
+
+.series-summary {
+  margin-top: 18px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: var(--surface2);
+}
+
+.series-summary-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.series-summary-rank {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.1;
+  margin: 4px 0;
+}
+
+.series-summary-meta {
+  font-size: 13px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
 /* ── Player terminal ── */
 .player-app {
   min-height: 100vh;

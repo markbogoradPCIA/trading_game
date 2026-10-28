@@ -34,6 +34,10 @@ const els = {
   btnReveal: document.getElementById("btn-reveal"),
   btnStandings: document.getElementById("btn-standings"),
   btnNext: document.getElementById("btn-next"),
+  btnRematch: document.getElementById("btn-rematch"),
+  podiumTitle: document.getElementById("podium-title"),
+  seriesList: document.getElementById("series-list"),
+  chartWrap: document.getElementById("host-chart-wrap"),
 };
 
 let state = null;
@@ -80,6 +84,7 @@ els.btnStart.addEventListener("click", () => socket.emit("host:start"));
 els.btnReveal.addEventListener("click", () => socket.emit("host:reveal"));
 els.btnStandings.addEventListener("click", () => socket.emit("host:standings"));
 els.btnNext.addEventListener("click", () => socket.emit("host:next"));
+els.btnRematch.addEventListener("click", () => socket.emit("host:rematch"));
 
 function renderJoinQr(code, joinUrl, qrDataUrl) {
   if (!els.joinQr) return;
@@ -109,6 +114,7 @@ function clearTradeTimerTick() {
     clearInterval(timerInterval);
     timerInterval = null;
   }
+  if (els.tradeTimer) els.tradeTimer.classList.add('hidden');
 }
 
 function updateTradeTimerDisplay() {
@@ -162,9 +168,10 @@ function render() {
 
   els.lobby.classList.add("hidden");
   els.playing.classList.remove("hidden");
+  els.chartWrap.classList.remove("hidden");
 
   chart.setData(state.chartData || []);
-  els.dayLabel.textContent = `Day ${state.dayIndex + 1} / ${state.totalDays}`;
+  els.dayLabel.textContent = `Game ${state.gameNumber || 1} · Day ${state.dayIndex + 1} / ${state.totalDays}`;
 
   hideControls();
 
@@ -207,6 +214,7 @@ function hideControls() {
   els.btnReveal.classList.add("hidden");
   els.btnStandings.classList.add("hidden");
   els.btnNext.classList.add("hidden");
+  els.btnRematch.classList.add("hidden");
   els.headlineWrap.classList.remove("hidden");
   els.standings.classList.add("hidden");
   els.podium.classList.add("hidden");
@@ -269,24 +277,49 @@ function showStandings(isFinal) {
 
 function showPodium() {
   els.headlineWrap.classList.add("hidden");
+  els.chartWrap.classList.add("hidden");
   els.podium.classList.remove("hidden");
+  const gameNumber = state.gameNumber || 1;
+  els.podiumTitle.textContent = `Game ${gameNumber} complete`;
   els.podiumList.innerHTML = renderStandings(state.players, true);
-  els.hostStatus.textContent = "Game complete!";
+  els.seriesList.innerHTML = renderSeries(state.series || []);
+  els.btnRematch.classList.remove("hidden");
+  els.hostStatus.textContent = `Game ${gameNumber} complete. Rematch starts everyone at $10,000.`;
 }
 
 function renderStandings(players, isFinal) {
+  const ranks = standingRanks(players);
   return players
     .map((p, i) => {
+      const rank = ranks[i];
       const exp =
         p.exposure !== null ? `<div class="standing-exposure">${formatExposureShort(p.exposure)} today</div>` : "";
       return `
-        <div class="standing-row ${i === 0 && isFinal ? "top-1" : ""}" style="border-left: 6px solid ${p.color}">
-          <span class="standing-rank">#${i + 1}</span>
+        <div class="standing-row ${rank === 1 && isFinal ? "top-1" : ""}" style="border-left: 6px solid ${p.color}">
+          <span class="standing-rank">#${rank}</span>
           <div>
             <div>${escapeHtml(p.name)}</div>
             ${exp}
           </div>
           <span class="standing-pnl ${p.pnl >= 0 ? "up" : "down"}">${formatMoney(p.pnl)}</span>
+        </div>`;
+    })
+    .join("");
+}
+
+function renderSeries(rows) {
+  return rows
+    .map((p) => {
+      const games = `${p.games} game${p.games === 1 ? "" : "s"}`;
+      const wins = `${p.wins} win${p.wins === 1 ? "" : "s"}`;
+      return `
+        <div class="standing-row ${p.rank === 1 ? "top-1" : ""}" style="border-left: 6px solid ${p.color}">
+          <span class="standing-rank">#${p.rank}</span>
+          <div>
+            <div>${escapeHtml(p.name)}</div>
+            <div class="standing-exposure">${games} · ${wins}</div>
+          </div>
+          <span class="standing-pnl ${p.totalPnl >= 0 ? "up" : "down"}">${formatMoney(p.totalPnl)}</span>
         </div>`;
     })
     .join("");

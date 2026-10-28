@@ -46,6 +46,9 @@ const els = {
   standingsResolution: document.getElementById("standings-resolution"),
   rank: document.getElementById("player-rank"),
   finalRank: document.getElementById("final-rank"),
+  finalEyebrow: document.getElementById("final-eyebrow"),
+  finalPnl: document.getElementById("final-pnl"),
+  seriesSummary: document.getElementById("series-summary"),
 };
 
 let state = null;
@@ -250,6 +253,25 @@ function join() {
   });
 }
 
+
+function playerRank(players, id) {
+  const ranks = standingRanks(players);
+  const index = players.findIndex((player) => player.id === id);
+  return index >= 0 ? ranks[index] : 0;
+}
+
+function renderSeriesSummary(entry) {
+  const total = (entry.totalPnl >= 0 ? "+" : "") + formatMoney(entry.totalPnl);
+  const totalClass = entry.totalPnl >= 0 ? "up" : "down";
+  const games = `${entry.games} game${entry.games === 1 ? "" : "s"}`;
+  const wins = `${entry.wins} win${entry.wins === 1 ? "" : "s"}`;
+  return `
+    <div class="series-summary-label">Series</div>
+    <div class="series-summary-rank">#${entry.rank}</div>
+    <div class="series-summary-meta">${games} · ${wins}</div>
+    <div class="player-pnl-big ${totalClass}">${total} total</div>`;
+}
+
 function show(screen) {
   Object.values(screens).forEach((s) => s.classList.add("hidden"));
   screen.classList.remove("hidden");
@@ -264,7 +286,7 @@ function render() {
 
   if (state.phase !== "lobby") {
     els.terminalDay.classList.remove("hidden");
-    els.terminalDay.textContent = `Day ${state.dayIndex + 1} / ${state.totalDays}`;
+    els.terminalDay.textContent = `Game ${state.gameNumber || 1} · Day ${state.dayIndex + 1} / ${state.totalDays}`;
   } else {
     els.terminalDay.classList.add("hidden");
   }
@@ -281,10 +303,16 @@ function render() {
 
   if (state.phase === "finished") {
     clearTradeTimerTick();
-    setOrderDockMode("idle");
+    playerDock.classList.add("hidden");
     show(screens.finished);
-    const rank = state.players.findIndex((p) => p.id === state.playerId) + 1;
+    const rank = playerRank(state.players, state.playerId);
+    els.finalEyebrow.textContent = `Game ${state.gameNumber || 1} complete`;
     els.finalRank.textContent = `#${rank}`;
+    const pnl = state.me?.pnl ?? 0;
+    els.finalPnl.textContent = (pnl >= 0 ? "+" : "") + formatMoney(pnl);
+    els.finalPnl.className = "player-pnl-big " + (pnl >= 0 ? "up" : "down");
+    const entry = (state.series || []).find((row) => row.id === state.playerId);
+    els.seriesSummary.innerHTML = entry ? renderSeriesSummary(entry) : "";
     return;
   }
 
@@ -299,7 +327,7 @@ function render() {
     } else {
       els.standingsResolution.classList.add("hidden");
     }
-    const rank = state.players.findIndex((p) => p.id === state.playerId) + 1;
+    const rank = playerRank(state.players, state.playerId);
     els.rank.textContent = `#${rank}`;
     return;
   }

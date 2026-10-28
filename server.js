@@ -201,6 +201,16 @@ io.on("connection", (socket) => {
     emitRoom(code);
   });
 
+  socket.on("host:rematch", () => {
+    const code = hostRooms.get(socket.id);
+    const result = rooms.rematch(code);
+    if (result.error) {
+      socket.emit("host:error", result.error);
+      return;
+    }
+    emitRoom(code);
+  });
+
   socket.on("disconnect", () => {
     const removed = rooms.removePlayer(socket.id);
     hostRooms.delete(socket.id);
